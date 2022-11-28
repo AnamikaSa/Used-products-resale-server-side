@@ -26,6 +26,13 @@ async function run() {
         app.get('/categories', async (req, res) => {
             const query = {};
             const o = await categoriesCollection.find(query).toArray();
+            // const alreadybooked= await bookingCollection.find(query).toArray();
+            // o.forEach(op=>{
+            //     const opbooked =alreadybooked.filter(b=> b.productName === op.name);
+            //     const bp=opbooked.map(b=>b.piece);
+            //     const remaining= op.piece.filter(pi=> !bp.includes(pi));
+            //     op.piece=remaining;
+            // })
             res.send(o);
         })
 
@@ -41,6 +48,19 @@ async function run() {
             const booking=req.body;
             const r = await bookingCollection.insertOne(booking);
             res.send(r);
+        })
+
+        app.get('/bookings', async (req, res) => {
+            const email = req.query.email;
+            // const decodedEmail = req.decoded.email;
+
+            // if (email !== decodedEmail) {
+            //     return res.status(403).send({ message: 'forbidden access' });
+            // }
+
+            const query = { email: email };
+            const bookings = await bookingCollection.find(query).toArray();
+            res.send(bookings);
         })
 
     }
