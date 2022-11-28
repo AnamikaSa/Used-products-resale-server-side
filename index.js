@@ -90,6 +90,39 @@ async function run() {
             res.send(r);
         })
 
+        app.get('/users', async (req, res) => {
+            const query = {};
+            const users = await usersCollection.find(query).toArray();
+            res.send(users);
+        })
+
+        app.put('/users/seller/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) }
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    role: 'seller'
+                }
+            }
+            const result = await usersCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        });
+
+        app.get('/users/admin/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email }
+            const user = await usersCollection.findOne(query);
+            res.send({ isAdmin: user?.role === 'admin' });
+        })
+
+        app.get('/users/seller/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email }
+            const user = await usersCollection.findOne(query);
+            res.send({ isSeller: user?.role === 'seller' });
+        })
+
         app.get('/jwt', async (req, res) => {
             const email = req.query.email;
             const query = { email: email };
