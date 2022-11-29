@@ -42,6 +42,7 @@ async function run() {
         const categoriesCollection = client.db('resale_products').collection('categories');
         const bookingCollection = client.db('resale_products').collection('bookings');
         const usersCollection = client.db('resale_products').collection('users');
+        const ProductsCollection = client.db('resale_products').collection('added products');
 
         app.get('/categories', async (req, res) => {
             const query = {};
@@ -109,6 +110,19 @@ async function run() {
             res.send(result);
         });
 
+        app.put('/users/buyer/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) }
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    role: 'buyer'
+                }
+            }
+            const result = await usersCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        });
+
         app.get('/users/admin/:email', async (req, res) => {
             const email = req.params.email;
             const query = { email }
@@ -123,6 +137,13 @@ async function run() {
             res.send({ isSeller: user?.role === 'seller' });
         })
 
+        app.get('/users/buyer/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email }
+            const user = await usersCollection.findOne(query);
+            res.send({ isSeller: user?.role === 'buyer' });
+        })
+
         app.get('/jwt', async (req, res) => {
             const email = req.query.email;
             const query = { email: email };
@@ -133,6 +154,19 @@ async function run() {
             }
             res.status(403).send({ accessToken: '' })
         });
+
+        app.post('/addproduct', async(req,res)=>{
+            const Products= req.body;
+            const r= await ProductsCollection.insertOne(Products);
+            res.send(r);
+
+        })
+
+        app.get('/addproduct', async (req, res) => {
+            const query = {};
+            const r= await ProductsCollection.find(query).toArray();
+            res.send(r);
+        })
 
     }
     finally { }
